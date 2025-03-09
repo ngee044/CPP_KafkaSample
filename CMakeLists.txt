@@ -24,4 +24,5 @@ find_package(Threads REQUIRED)
 
 add_subdirectory(.cpp_tool_kit)
 
-add_subdirectory(KafkaSample)
+add_subdirectory(KafkaMessageEmitter)
+add_subdirectory(KafkaMessageConsumer)
