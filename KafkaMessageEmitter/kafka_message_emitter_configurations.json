@@ -1,0 +1,23 @@
+{
+	"server_title" : "KafkaMessageEmitter",
+	"server_sub_title" : "KafkaMessageEmitter",
+	"main_registered_key": "kafka_message_emitter",
+	"high_priority_count" : 3,
+	"normal_priority_count" : 3,
+	"low_priority_count" : 5,
+	"write_console_log" : 3,
+	"write_file_log" : 0,
+	"console_windows": false,
+
+	"kafka_host": "127.0.0.1",
+	"kafka_port": 5672,
+	"kafka_topic_name": "message_broadcast_queue",
+	"kafka_topic_group_name": "kafka_topic_group_name",
+
+	"use_ssl": false,
+	"win_ca_cert" : "",
+	"linux_ca_cert" : "",
+	"ca_cert" : "",
+
+	"empty": ""
+}
