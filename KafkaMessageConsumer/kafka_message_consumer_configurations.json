@@ -11,8 +11,11 @@
 
 	"kafka_host": "127.0.0.1",
 	"kafka_port": 9092,
-	"kafka_topic_name": "message_broadcast_queue",
-	"kafka_topic_group_name": "kafka_topic_group_name",
+	"kafka_topic_name": "kafka_my_topic",
+	"kafka_topic_group_name": "kafka_my_topic_group",
+	"kafka_enable_auto_commit": true,
+	"kafka_auto_commit_interval": 1000,
+	"kafka_auto_offset_reset": "earliest",
 
 	"use_ssl": false,
 	"win_ca_cert" : "",

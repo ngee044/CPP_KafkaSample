@@ -32,6 +32,9 @@ Configurations::Configurations(ArgumentParser&& arguments)
 	, kafka_port_(9092)
 	, kafka_topic_name_("")
 	, kafka_topic_group_name_("")
+	, kafka_enable_auto_commit_(true)
+	, kafka_auto_commit_interval_(1000)
+	, kafka_auto_offset_reset_("earliest")
 	, use_ssl_(false)
 	, ca_cert_("")
 	, engine_("")
@@ -80,6 +83,12 @@ auto Configurations::kafka_port() -> uint16_t { return kafka_port_; }
 auto Configurations::kafka_topic_name() -> std::string { return kafka_topic_name_; }
 
 auto Configurations::kafka_topic_group_name() -> std::string { return kafka_topic_group_name_; }
+
+auto Configurations::kafka_enable_auto_commit() -> bool { return kafka_enable_auto_commit_; }
+
+auto Configurations::kafka_auto_commit_interval() -> int { return kafka_auto_commit_interval_; }
+
+auto Configurations::kafka_auto_offset_reset() -> std::string { return kafka_auto_offset_reset_; }
 
 auto Configurations::use_ssl() -> bool { return use_ssl_; }
 
@@ -199,6 +208,33 @@ auto Configurations::load() -> void
 	if (message.contains("kafka_topic_group_name") && message.at("kafka_topic_group_name").is_string())
 	{
 		kafka_topic_group_name_ = message.at("kafka_topic_group_name").as_string().data();
+	}
+
+	if (message.contains("kafka_enable_auto_commit") && message.at("kafka_enable_auto_commit").is_bool())
+	{
+		kafka_enable_auto_commit_ = message.at("kafka_enable_auto_commit").as_bool();
+	}
+
+	if (message.contains("kafka_auto_commit_interval") && message.at("kafka_auto_commit_interval").is_number())
+	{
+		kafka_auto_commit_interval_ = message.at("kafka_auto_commit_interval").as_int64();
+	}
+
+	if (message.contains("kafka_auto_offset_reset") && message.at("kafka_auto_offset_reset").is_string())
+	{
+		kafka_auto_offset_reset_ = message.at("kafka_auto_offset_reset").as_string().data();
+	}
+
+	if (message.contains("use_ssl") && message.at("use_ssl").is_bool())
+	{
+		use_ssl_ = message.at("use_ssl").as_bool();
+	}
+
+	// TODO
+	// win, linux ca_cert
+	if (message.contains("ca_cert") && message.at("ca_cert").is_string())
+	{
+		ca_cert_ = message.at("ca_cert").as_string().data();
 	}
 }
 

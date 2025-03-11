@@ -42,6 +42,9 @@ public:
 	auto kafka_port() -> uint16_t;
 	auto kafka_topic_name() -> std::string;
 	auto kafka_topic_group_name() -> std::string;
+	auto kafka_enable_auto_commit() -> bool;
+	auto kafka_auto_commit_interval() -> int;
+	auto kafka_auto_offset_reset() -> std::string;
 
 
 protected:
@@ -72,10 +75,14 @@ private:
 	int kafka_port_;
 	std::string kafka_topic_name_;
 	std::string kafka_topic_group_name_;
+	bool kafka_enable_auto_commit_;
+	int kafka_auto_commit_interval_;
+	std::string kafka_auto_offset_reset_;
 
 	bool use_ssl_;
 	std::string ca_cert_;
 	std::string engine_;
 	std::string client_cert_;
 	std::string client_key_;
+
 };
