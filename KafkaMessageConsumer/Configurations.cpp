@@ -34,6 +34,7 @@ Configurations::Configurations(ArgumentParser&& arguments)
 	, kafka_topic_group_name_("")
 	, kafka_enable_auto_commit_(true)
 	, kafka_auto_commit_interval_(1000)
+	, kafka_message_polling_interval_(500)
 	, kafka_auto_offset_reset_("earliest")
 	, use_ssl_(false)
 	, ca_cert_("")
@@ -87,6 +88,8 @@ auto Configurations::kafka_topic_group_name() -> std::string { return kafka_topi
 auto Configurations::kafka_enable_auto_commit() -> bool { return kafka_enable_auto_commit_; }
 
 auto Configurations::kafka_auto_commit_interval() -> int { return kafka_auto_commit_interval_; }
+
+auto Configurations::kafka_message_polling_interval() -> int { return kafka_message_polling_interval_; }
 
 auto Configurations::kafka_auto_offset_reset() -> std::string { return kafka_auto_offset_reset_; }
 

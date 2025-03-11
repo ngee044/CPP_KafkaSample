@@ -13,24 +13,24 @@ using namespace Thread;
 
 namespace KafkaMessageConsumer
 {
-    class Consumer
-    {
-    public:
-        Consumer(std::shared_ptr<Configurations> configurations);
-        virtual ~Consumer();
+	class Consumer
+	{
+	public:
+		Consumer(std::shared_ptr<Configurations> configurations);
+		virtual ~Consumer();
 
-        auto start() -> std::tuple<bool, std::optional<std::string>>;
-        auto stop() -> void;
+		auto start() -> std::tuple<bool, std::optional<std::string>>;
+		auto stop() -> void;
 
-    protected:
-        auto message_polling() -> std::tuple<bool, std::optional<std::string>>;
-        auto create_thread_pool() -> std::tuple<bool, std::optional<std::string>>;
-        auto destroy_thread_pool() -> void;
+	protected:
+		auto message_polling() -> std::tuple<bool, std::optional<std::string>>;
+		auto create_thread_pool() -> std::tuple<bool, std::optional<std::string>>;
+		auto destroy_thread_pool() -> void;
 
-    private:
-        std::shared_ptr<Configurations> configurations_;
-        std::shared_ptr<Kafka::KafkaQueueConsume> kafka_queue_consume_;
-        std::shared_ptr<ThreadPool> thread_pool_;
-    };
+	private:
+		std::shared_ptr<Configurations> configurations_;
+		std::shared_ptr<Kafka::KafkaQueueConsume> kafka_queue_consume_;
+		std::shared_ptr<ThreadPool> thread_pool_;
+	};
 
 }
