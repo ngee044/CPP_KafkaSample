@@ -11,8 +11,8 @@
 
 	"kafka_host": "127.0.0.1",
 	"kafka_port": 5672,
-	"kafka_topic_name": "message_broadcast_queue",
-	"kafka_topic_group_name": "kafka_topic_group_name",
+	"kafka_topic_name": "kafka_my_topic",
+	"kafka_topic_group_name": "kafka_my_topic_group",
 
 	"use_ssl": false,
 	"win_ca_cert" : "",
