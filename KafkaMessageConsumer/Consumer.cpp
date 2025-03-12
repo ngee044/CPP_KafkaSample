@@ -37,11 +37,12 @@ namespace KafkaMessageConsumer
 
 	Consumer::~Consumer()
 	{
+		stop();
 	}
 
 	auto Consumer::create_thread_pool() -> std::tuple<bool, std::optional<std::string>>
 	{
-			destroy_thread_pool();
+		destroy_thread_pool();
 
 		try
 		{	
@@ -156,6 +157,12 @@ namespace KafkaMessageConsumer
 
 	auto Consumer::stop() -> void
 	{
+		if (kafka_queue_consume_ != nullptr)
+		{
+			kafka_queue_consume_->stop();
+		}
+
+		destroy_thread_pool();
 	}
 
 	auto Consumer::message_polling() -> std::tuple<bool, std::optional<std::string>>
