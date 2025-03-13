@@ -1,9 +1,13 @@
 #include "Configurations.h"
 #include "Logger.h"
+#include "KafkaMessage.h"
 #include "Producer.h"
 
 #include "fmt/format.h"
 #include "fmt/xchar.h"
+
+#include "boost/json.hpp"
+#include "boost/json/parse.hpp"
 
 #include <iostream>
 #include <signal.h>
@@ -41,8 +45,14 @@ int main(int argc, char* argv[])
 
 	Logger::handle().write(LogTypes::Information, "KafkaMessageEmitter started.");
 
-	// TODO
-	// publish message
+	boost::json::object send_message =
+	{
+		{ "name", "kafka_send_message_name"},
+		{ "data", "kafka_send_message_data" },
+	};
+	
+	Kafka::KafkaMessage kafka_message(configurations_->kafka_topic_name(), "example_key", boost::json::serialize(send_message));
+	kafka_producer_->send_message(kafka_message);
 
 	kafka_producer_.reset();
 	configurations_.reset();
