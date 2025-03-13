@@ -73,12 +73,50 @@ namespace KafkaMessageEmitter
 
     auto Producer::send_message(const Kafka::KafkaMessage &kafka_message) -> std::tuple<bool, std::optional<std::string>>
     {
-        return std::tuple<bool, std::optional<std::string>>();
+        if (kafka_queue_emitter_ == nullptr)
+        {
+            Logger::handle().write(LogTypes::Error, "KafkaQueueEmitter is not initialized.");
+            return { false, "KafkaQueueEmitter is not initialized." };
+        }
+
+        auto delivery_result = kafka_queue_emitter_->send(kafka_message);
+
+        if (delivery_result.get_status() == Kafka::DeliveryResult::Status::Failed)
+        {
+            Logger::handle().write(LogTypes::Error, fmt::format("failed send message (kafka) = {}", delivery_result.get_message()));
+            if (delivery_result.get_error().has_value())
+            {
+                Logger::handle().write(LogTypes::Error, fmt::format("kafka producer send error = {}", delivery_result.get_error().value()));
+            }
+            return { false, delivery_result.get_error().value() };
+        }
+
+        return { true, std::nullopt };
     }
 
     auto Producer::send_message(const std::vector<Kafka::KafkaMessage> &kafka_messages) -> std::tuple<bool, std::optional<std::string>>
     {
-        return std::tuple<bool, std::optional<std::string>>();
+        if (kafka_queue_emitter_ == nullptr)
+        {
+            Logger::handle().write(LogTypes::Error, "KafkaQueueEmitter is not initialized.");
+            return { false, "KafkaQueueEmitter is not initialized." };
+        }
+
+        auto delivery_results = kafka_queue_emitter_->send_batch(kafka_messages);
+
+        for (const auto& delivery_result : delivery_results)
+        {
+            if (delivery_result.get_status() == Kafka::DeliveryResult::Status::Failed)
+            {
+                Logger::handle().write(LogTypes::Error, fmt::format("failed send message (kafka) = {}", delivery_result.get_message()));
+                if (delivery_result.get_error().has_value())
+                {
+                    Logger::handle().write(LogTypes::Error, fmt::format("kafka producer send error = {}", delivery_result.get_error().value()));
+                }
+            }
+        }
+
+        return { true, std::nullopt };
     }
 
     auto Producer::create_thread_pool() -> std::tuple<bool, std::optional<std::string>>

@@ -1,6 +1,7 @@
 
 #include "Logger.h"
 #include "Configurations.h"
+#include "Consumer.h"
 
 #include "fmt/format.h"
 #include "fmt/xchar.h"
@@ -9,12 +10,14 @@
 #include <signal.h>
 
 using namespace Utilities;
+using namespace KafkaMessageConsumer;
 
 void register_signal(void);
 void deregister_signal(void);
 void signal_callback(int32_t signum);
 
 std::shared_ptr<Configurations> configurations_ = nullptr;
+std::shared_ptr<Consumer> kafka_consumer_ = nullptr;
 
 
 int main(int argc, char* argv[]) 
@@ -28,7 +31,20 @@ int main(int argc, char* argv[])
 
 	Logger::handle().start(configurations_->client_title());
 
+	kafka_consumer_ = std::make_shared<Consumer>(configurations_);
+
+	auto [result, message] = kafka_consumer_->start();
+	if (!result)
+	{
+		Logger::handle().write(LogTypes::Error, fmt::format("Failed to start consumer: {}", message.value()));
+		return 1;
+	}
+
+	Logger::handle().write(LogTypes::Information, "KafkaMessageConsumer started.");
 	
+	kafka_consumer_->wait_stop();
+
+	kafka_consumer_.reset();
 	configurations_.reset();
 
 	return 0;

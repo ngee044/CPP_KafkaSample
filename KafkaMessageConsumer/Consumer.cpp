@@ -165,7 +165,18 @@ namespace KafkaMessageConsumer
 		destroy_thread_pool();
 	}
 
-	auto Consumer::message_polling() -> std::tuple<bool, std::optional<std::string>>
+    auto Consumer::wait_stop() -> std::tuple<bool, std::optional<std::string>>
+    {
+        if (kafka_queue_consume_ == nullptr)
+		{
+			Logger::handle().write(LogTypes::Error, "KafkaQueueConsume is not initialized.");
+			return { false, "KafkaQueueConsume is not initialized." };
+		}
+
+		return kafka_queue_consume_->wait_stop();
+    }
+
+    auto Consumer::message_polling() -> std::tuple<bool, std::optional<std::string>>
 	{
 		if (thread_pool_ == nullptr)
 		{
@@ -184,7 +195,7 @@ namespace KafkaMessageConsumer
 		{
 			// TODO
 			// message handling
-			Logger::handle().write(LogTypes::Information, fmt::format("KafkaQueueConsume message: {}", message.value()));
+			Logger::handle().write(LogTypes::Information, fmt::format("KafkaQueueConsume message => topic: {},  key: {}, value: {}", message.topic(), message.key(), message.value()));
 		}
 
 		auto job_pool = thread_pool_->job_pool();

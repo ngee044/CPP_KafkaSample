@@ -1,5 +1,6 @@
-
+#include "Configurations.h"
 #include "Logger.h"
+#include "Producer.h"
 
 #include "fmt/format.h"
 #include "fmt/xchar.h"
@@ -8,14 +9,44 @@
 #include <signal.h>
 
 using namespace Utilities;
-
+using namespace KafkaMessageEmitter;
 
 void register_signal(void);
 void deregister_signal(void);
 void signal_callback(int32_t signum);
 
-int main(int argc, char* argv[]) {
-	std::cout << "Hello, World!" << std::endl;
+std::shared_ptr<Configurations> configurations_ = nullptr;
+std::shared_ptr<Producer> kafka_producer_ = nullptr;
+
+int main(int argc, char* argv[]) 
+{
+	configurations_ = std::make_shared<Configurations>(ArgumentParser(argc, argv));
+
+	Logger::handle().file_mode(configurations_->write_file());
+	Logger::handle().console_mode(configurations_->write_console());
+	Logger::handle().write_interval(configurations_->write_interval());
+	Logger::handle().log_root(configurations_->log_root_path());
+
+	Logger::handle().start(configurations_->client_title());
+
+	// Multiple instance creation is possible
+	kafka_producer_ = std::make_shared<Producer>(configurations_);
+
+	auto [result, message] = kafka_producer_->start();
+	if (!result)
+	{
+		Logger::handle().write(LogTypes::Error, fmt::format("Failed to start producer: {}", message.value()));
+		return 1;
+	}
+
+	Logger::handle().write(LogTypes::Information, "KafkaMessageEmitter started.");
+
+	// TODO
+	// publish message
+
+	kafka_producer_.reset();
+	configurations_.reset();
+
 	return 0;
 }
 

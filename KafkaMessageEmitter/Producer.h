@@ -3,6 +3,7 @@
 #include "KafkaQueueEmitter.h"
 #include "Configurations.h"
 #include "ThreadPool.h"
+#include "KafkaMessage.h"
 
 #include <string>
 #include <memory>
@@ -22,7 +23,9 @@ namespace KafkaMessageEmitter
         auto start() -> std::tuple<bool, std::optional<std::string>>;
         auto stop() -> void;
 
-        auto send_message(const KafkaMessage& kafka_message) -> std::tuple<bool, std::optional<std::string>>;
+        // only sync send
+        auto send_message(const Kafka::KafkaMessage& kafka_message) -> std::tuple<bool, std::optional<std::string>>;
+        auto send_message(const std::vector<Kafka::KafkaMessage>& kafka_messages) -> std::tuple<bool, std::optional<std::string>>;
 
     protected:
         auto create_thread_pool() -> std::tuple<bool, std::optional<std::string>>;
