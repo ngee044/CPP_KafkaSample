@@ -21,6 +21,7 @@ namespace KafkaMessageConsumer
 
 		auto start() -> std::tuple<bool, std::optional<std::string>>;
 		auto stop() -> void;
+		auto wait_stop() -> std::tuple<bool, std::optional<std::string>>;
 
 	protected:
 		auto message_polling() -> std::tuple<bool, std::optional<std::string>>;

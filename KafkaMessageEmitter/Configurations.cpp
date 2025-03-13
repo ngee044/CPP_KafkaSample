@@ -32,6 +32,9 @@ Configurations::Configurations(ArgumentParser&& arguments)
 	, kafka_port_(9092)
 	, kafka_topic_name_("")
 	, kafka_topic_group_name_("")
+	, kafka_linger_ms_(5)
+	, kafka_batch_size_(32768)
+	, kafka_security_protocol_("SASL_SSL")
 	, use_ssl_(false)
 	, ca_cert_("")
 	, engine_("")
@@ -80,6 +83,12 @@ auto Configurations::kafka_port() -> uint16_t { return kafka_port_; }
 auto Configurations::kafka_topic_name() -> std::string { return kafka_topic_name_; }
 
 auto Configurations::kafka_topic_group_name() -> std::string { return kafka_topic_group_name_; }
+
+auto Configurations::kafka_linger_ms() -> int { return kafka_linger_ms_; }
+
+auto Configurations::kafka_batch_size() -> int { return kafka_batch_size_; }
+
+auto Configurations::kafka_security_protocol() -> std::string { return kafka_security_protocol_; }
 
 auto Configurations::use_ssl() -> bool { return use_ssl_; }
 
@@ -199,6 +208,21 @@ auto Configurations::load() -> void
 	if (message.contains("kafka_topic_group_name") && message.at("kafka_topic_group_name").is_string())
 	{
 		kafka_topic_group_name_ = message.at("kafka_topic_group_name").as_string().data();
+	}
+
+	if (message.contains("kafka_linger_ms") && message.at("kafka_linger_ms").is_number())
+	{
+		kafka_linger_ms_ = static_cast<int>(message.at("kafka_linger_ms").as_int64());
+	}
+
+	if (message.contains("kafka_batch_size") && message.at("kafka_batch_size").is_number())
+	{
+		kafka_batch_size_ = static_cast<int>(message.at("kafka_batch_size").as_int64());
+	}
+
+	if (message.contains("kafka_security_protocol") && message.at("kafka_security_protocol").is_string())
+	{
+		kafka_security_protocol_ = message.at("kafka_security_protocol").as_string().data();
 	}
 }
 

@@ -42,7 +42,9 @@ public:
 	auto kafka_port() -> uint16_t;
 	auto kafka_topic_name() -> std::string;
 	auto kafka_topic_group_name() -> std::string;
-
+	auto kafka_linger_ms() -> int;
+	auto kafka_batch_size() -> int;
+	auto kafka_security_protocol() -> std::string;
 
 protected:
 	auto load() -> void;
@@ -78,4 +80,9 @@ private:
 	std::string engine_;
 	std::string client_cert_;
 	std::string client_key_;
+
+	int kafka_linger_ms_;
+	int kafka_batch_size_;
+	std::string kafka_security_protocol_;
+
 };
