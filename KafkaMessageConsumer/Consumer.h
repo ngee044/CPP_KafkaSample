@@ -23,6 +23,8 @@ namespace KafkaMessageConsumer
 		auto stop() -> void;
 		auto wait_stop() -> std::tuple<bool, std::optional<std::string>>;
 
+		auto registered_brokers() -> std::map<std::string, std::string> { return registered_brokers_; }
+
 	protected:
 		auto message_polling() -> std::tuple<bool, std::optional<std::string>>;
 		auto create_thread_pool() -> std::tuple<bool, std::optional<std::string>>;
@@ -32,6 +34,7 @@ namespace KafkaMessageConsumer
 		std::shared_ptr<Configurations> configurations_;
 		std::shared_ptr<Kafka::KafkaQueueConsume> kafka_queue_consume_;
 		std::shared_ptr<ThreadPool> thread_pool_;
+		std::map<std::string, std::string> registered_brokers_;
 	};
 
 }

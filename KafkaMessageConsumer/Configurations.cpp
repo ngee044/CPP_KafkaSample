@@ -79,6 +79,8 @@ auto Configurations::server_port() -> uint16_t { return server_port_; }
 
 auto Configurations::kafka_host() -> std::string { return kafka_host_; }
 
+auto Configurations::kafka_brokers() -> std::vector<std::tuple<std::string, std::string>> { return kafka_brokers_; }
+
 auto Configurations::kafka_port() -> uint16_t { return kafka_port_; }
 
 auto Configurations::kafka_topic_name() -> std::string { return kafka_topic_name_; }
@@ -196,6 +198,38 @@ auto Configurations::load() -> void
 	if (message.contains("kafka_host") && message.at("kafka_host").is_string())
 	{
 		kafka_host_ = message.at("kafka_host").as_string().data();
+	}
+
+	if (message.contains("kafka_brokers") && message.at("kafka_brokers").is_array())
+	{
+		for (auto& value : message.at("kafka_brokers").as_array())
+		{
+			if (!value.is_object())
+			{
+				Logger::handle().write(LogTypes::Error, "kafka_brokers is not an object.");
+				continue;
+			}
+
+			auto object = value.as_object();
+			if (!object.contains("broker_name") || !object.at("broker_name").is_string())
+			{
+				Logger::handle().write(LogTypes::Error, "kafka_brokers does not contain broker_name.");
+				continue;
+			}
+
+			if (!object.contains("broker_host") || !object.at("broker_host").is_string())
+			{
+				Logger::handle().write(LogTypes::Error, "kafka_brokers does not contain broker_host.");
+				continue;
+			}
+			
+			std::string broker_name = object.at("broker_name").as_string().data();
+			std::string broker_host = object.at("broker_host").as_string().data();
+
+			Logger::handle().write(LogTypes::Information, fmt::format("[Consumer] kafka_brokers: {} {}", broker_name, broker_host));
+
+			kafka_brokers_.push_back({ broker_name, broker_host });
+		}
 	}
 
 	if (message.contains("kafka_port") && message.at("kafka_port").is_number())

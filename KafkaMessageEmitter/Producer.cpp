@@ -18,14 +18,37 @@ namespace KafkaMessageEmitter
         : configurations_(configurations)
         , kafka_queue_emitter_(nullptr)
     {
-        std::string brokers = fmt::format("{}:{}", configurations_->kafka_host(), configurations_->kafka_port());
+        std::string brokers;
+		if (!configurations_->kafka_brokers().empty())
+		{
+			std::vector<std::string> broker_host_list;
+			for (const auto& broker : configurations_->kafka_brokers())
+			{
+				auto [broker_name, broker_host] = broker;
+				broker_host_list.push_back(broker_host);
+				registered_brokers_.insert({ broker_name, broker_host });
+			}
+			brokers = fmt::format("{}", fmt::join(broker_host_list, ","));
+		}
+		else
+		{
+			brokers = fmt::format("{}:{}", configurations_->kafka_host(), configurations_->kafka_port());
+		}
+
+		Logger::handle().write(LogTypes::Information, fmt::format("Kafka brokers: {}", brokers));
+		
         Kafka::KafkaConfig kafka_config(brokers);
         kafka_config.add_config("linger.ms", "5");
         kafka_config.add_config("batch.size", "32768");
-        kafka_config.add_config("security.protocol", "SASL_SSL");
+        kafka_config.add_config("security.protocol", configurations_->kafka_security_protocol());
 
-        // TODO
-        // TLS/SSL settings
+        if (configurations_->use_ssl())
+        {
+            kafka_config.add_config("ssl.ca.location", configurations_->ca_cert());
+            kafka_config.add_config("ssl.engine", configurations_->engine());
+            kafka_config.add_config("ssl.certificate.location", configurations_->client_cert());
+            kafka_config.add_config("ssl.key.location", configurations_->client_key());
+        }
 
         kafka_queue_emitter_ = std::make_shared<Kafka::KafkaQueueEmitter>(kafka_config);
     }

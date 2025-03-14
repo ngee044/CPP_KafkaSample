@@ -39,6 +39,7 @@ public:
 	auto client_key() -> std::string;
 
 	auto kafka_host() -> std::string;
+	auto kafka_brokers() -> std::vector<std::tuple<std::string, std::string>>;
 	auto kafka_port() -> uint16_t;
 	auto kafka_topic_name() -> std::string;
 	auto kafka_topic_group_name() -> std::string;
@@ -71,6 +72,7 @@ private:
 	uint16_t server_port_;
 
 	std::string kafka_host_;
+	std::vector<std::tuple<std::string, std::string>> kafka_brokers_;
 	int kafka_port_;
 	std::string kafka_topic_name_;
 	std::string kafka_topic_group_name_;

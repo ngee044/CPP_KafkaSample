@@ -27,6 +27,8 @@ namespace KafkaMessageEmitter
         auto send_message(const Kafka::KafkaMessage& kafka_message) -> std::tuple<bool, std::optional<std::string>>;
         auto send_message(const std::vector<Kafka::KafkaMessage>& kafka_messages) -> std::tuple<bool, std::optional<std::string>>;
 
+        auto registered_brokers() -> std::map<std::string, std::string> { return registered_brokers_; }
+
     protected:
         auto create_thread_pool() -> std::tuple<bool, std::optional<std::string>>;
         auto destroy_thread_pool() -> void;
@@ -35,5 +37,7 @@ namespace KafkaMessageEmitter
         std::shared_ptr<Configurations> configurations_;
         std::shared_ptr<Kafka::KafkaQueueEmitter> kafka_queue_emitter_;
         std::shared_ptr<ThreadPool> thread_pool_;
+		std::map<std::string, std::string> registered_brokers_;
+
     };
 }

@@ -18,6 +18,21 @@
 	"kafka_message_polling_interval": 500,
 	"kafka_auto_offset_reset": "earliest",
 
+	"kafka_broker_list": [
+		{
+			"broker_name": "broker1",
+			"broker_host": "localhost:9092"
+		},
+		{
+			"broker_name": "broker2",
+			"broker_host": "localhost:9092"
+		},
+		{
+			"broker_name": "broker3",
+			"broker_host": "localhost:9092"
+		}
+	],
+	
 	"use_ssl": false,
 	"win_ca_cert" : "",
 	"linux_ca_cert" : "",

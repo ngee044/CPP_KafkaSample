@@ -17,20 +17,45 @@ namespace KafkaMessageConsumer
 		: configurations_(configurations)
 		, kafka_queue_consume_(nullptr)
 	{
-		std::string brokers = fmt::format("{}:{}", configurations_->kafka_host(), configurations_->kafka_port());
-		Kafka::KafkaConfig kafka_config_(brokers);
-		kafka_config_.add_config("enable.auto.commit", configurations_->kafka_enable_auto_commit() ? "true" : "false");
-		kafka_config_.add_config("auto.commit.interval.ms", std::to_string(configurations_->kafka_auto_commit_interval()));
-		kafka_config_.add_config("auto.offset.reset", configurations_->kafka_auto_offset_reset());
+		if (configurations_ == nullptr)
+		{
+			Logger::handle().write(LogTypes::Error, "Configurations is nullptr");
+			return;
+		}
 
-		kafka_queue_consume_ = std::make_shared<Kafka::KafkaQueueConsume>(kafka_config_);
+		std::string brokers;
+		if (!configurations_->kafka_brokers().empty())
+		{
+			std::vector<std::string> broker_host_list;
+			for (const auto& broker : configurations_->kafka_brokers())
+			{
+				auto [broker_name, broker_host] = broker;
+				broker_host_list.push_back(broker_host);
+				registered_brokers_.insert({ broker_name, broker_host });
+			}
+			brokers = fmt::format("{}", fmt::join(broker_host_list, ","));
+		}
+		else
+		{
+			brokers = fmt::format("{}:{}", configurations_->kafka_host(), configurations_->kafka_port());
+		}
+
+		Logger::handle().write(LogTypes::Information, fmt::format("Kafka brokers: {}", brokers));
+		
+		Kafka::KafkaConfig kafka_config(brokers);
+		kafka_config.add_config("enable.auto.commit", configurations_->kafka_enable_auto_commit() ? "true" : "false");
+		kafka_config.add_config("auto.commit.interval.ms", std::to_string(configurations_->kafka_auto_commit_interval()));
+		kafka_config.add_config("auto.offset.reset", configurations_->kafka_auto_offset_reset());
+
+
+		kafka_queue_consume_ = std::make_shared<Kafka::KafkaQueueConsume>(kafka_config);
 
 // TODO
 // kafka config class settings
 #if 0
-		kafka_config_.set_group_id(configurations_->kafka_topic_group_name());
-		kafka_config_.set_auto_commit(configurations_->kafka_enable_auto_commit());
-		kafka_config_.set_timeout_ms(configurations_->kafka_auto_commit_interval());
+		kafka_config.set_group_id(configurations_->kafka_topic_group_name());
+		kafka_config.set_auto_commit(configurations_->kafka_enable_auto_commit());
+		kafka_config.set_timeout_ms(configurations_->kafka_auto_commit_interval());
 #endif
 
 	}
