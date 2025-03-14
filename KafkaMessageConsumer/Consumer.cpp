@@ -16,6 +16,8 @@ namespace KafkaMessageConsumer
 	Consumer::Consumer(std::shared_ptr<Configurations> configurations)
 		: configurations_(configurations)
 		, kafka_queue_consume_(nullptr)
+		, running_(false)
+        , messages_since_commit_(0)
 	{
 		if (configurations_ == nullptr)
 		{
@@ -46,6 +48,18 @@ namespace KafkaMessageConsumer
 		kafka_config.add_config("enable.auto.commit", configurations_->kafka_enable_auto_commit() ? "true" : "false");
 		kafka_config.add_config("auto.commit.interval.ms", std::to_string(configurations_->kafka_auto_commit_interval()));
 		kafka_config.add_config("auto.offset.reset", configurations_->kafka_auto_offset_reset());
+		kafka_config.add_config("acks", configurations_->kafka_acks());
+		kafka_config.add_config("retries", std::to_string(configurations_->kafka_retries())); 
+		kafka_config.add_config("compression.type", configurations_->kafka_compression_type());
+		kafka_config.add_config("enable.idempotence", configurations_->kafka_enable_idempotence() ? "true" : "false");
+
+		if (configurations_->use_ssl())
+		{
+			kafka_config.add_config("security.protocol", "SSL");
+			kafka_config.add_config("ssl.ca.location", configurations_->ca_cert());
+			kafka_config.add_config("ssl.certificate.location", configurations_->client_cert());
+			kafka_config.add_config("ssl.key.location", configurations_->client_key());
+		}
 
 		kafka_queue_consume_ = std::make_shared<Kafka::KafkaQueueConsume>(kafka_config);
 
@@ -64,8 +78,38 @@ namespace KafkaMessageConsumer
 		stop();
 	}
 
-	auto Consumer::create_thread_pool() -> std::tuple<bool, std::optional<std::string>>
-	{
+    auto Consumer::handle_message_dlq(const Kafka::KafkaMessage& message) -> std::tuple<bool, std::optional<std::string>>
+    {
+		for (auto i = 0; i < configurations_->kafka_retries(); i++)
+		{
+			try
+			{
+				// TODO
+				// message handling (e.g database, file, etc)
+				// if success return true
+				// if failed return false
+
+				return { true, std::nullopt };
+			}
+			catch(const std::exception& e)
+			{
+				Logger::handle().write(LogTypes::Error, fmt::format("Error processing key={}, attempt {} => {}", message.key(), i, e.what()));
+				std::this_thread::sleep_for(std::chrono::seconds(i));
+			}
+		}
+
+		return { false, "Failed to process message" };
+    }
+
+    auto Consumer::send_to_dlq(const Kafka::KafkaMessage &message) -> void
+    {
+		// TODO
+		// send to dlq
+		Logger::handle().write(LogTypes::Information, fmt::format("Send to DLQ: topic: {}, key: {}, value: {}", message.topic(), message.key(), message.value()));
+    }
+
+    auto Consumer::create_thread_pool() -> std::tuple<bool, std::optional<std::string>>
+    {
 		destroy_thread_pool();
 
 		try
@@ -172,9 +216,16 @@ namespace KafkaMessageConsumer
 			return { false, subscribe_error };
 		}
 
+		running_.store(true);
+		messages_since_commit_ = 0;
+		last_commit_time_ = std::chrono::system_clock::now();
+
 		Logger::handle().write(LogTypes::Information, fmt::format("KafkaQueueConsume subscribed to topic: {}", configurations_->kafka_topic_name()));
-	
-		thread_pool_->push(std::make_shared<Job>(JobPriorities::High, std::bind(&Consumer::message_polling, this), "message_polling_job"));
+
+		// only one thread for long term job (message polling)
+		auto worker = std::make_shared<ThreadWorker>(std::vector<JobPriorities>{ JobPriorities::LongTerm });
+		thread_pool_->push(worker);
+		thread_pool_->push(std::make_shared<Job>(JobPriorities::LongTerm, std::bind(&Consumer::message_polling, this), "message_polling_job"));
 
 		return { true, std::nullopt };
 	}
@@ -219,6 +270,11 @@ namespace KafkaMessageConsumer
 		{
 			// TODO
 			// message handling
+			auto [success, error] = handle_message_dlq(message);
+			if (!success) 
+			{
+				send_to_dlq(message); 
+			}
 			Logger::handle().write(LogTypes::Information, fmt::format("KafkaQueueConsume message => topic: {},  key: {}, value: {}", message.topic(), message.key(), message.value()));
 		}
 
@@ -231,12 +287,28 @@ namespace KafkaMessageConsumer
 		
 		if (configurations_->kafka_enable_auto_commit())
 		{
-			kafka_queue_consume_->commit_sync();
+			messages_since_commit_ += messages.size();
+			auto now = std::chrono::system_clock::now();
+			auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - last_commit_time_);
+			if (messages_since_commit_ >= configurations_->kafka_message_polling_interval() || duration.count() >= configurations_->kafka_auto_commit_interval())
+			{
+				kafka_queue_consume_->commit_async();
+				messages_since_commit_ = 0;
+				last_commit_time_ = now;
+			}
 		}
 
-		job_pool->push(std::make_shared<Job>(JobPriorities::High, std::bind(&Consumer::message_polling, this), "message_polling_job"));
+		if (!configurations_->kafka_enable_auto_commit())
+		{
+			
+			kafka_queue_consume_->commit_async();
+#ifdef _DEBUG
+			this_thread::sleep_for(std::chrono::seconds(1));
+#endif
+		}
+
+		job_pool->push(std::make_shared<Job>(JobPriorities::LongTerm, std::bind(&Consumer::message_polling, this), "message_polling_job"));
 		
 		return { true, std::nullopt };
 	}
-
 }
