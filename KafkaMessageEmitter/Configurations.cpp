@@ -35,6 +35,10 @@ Configurations::Configurations(ArgumentParser&& arguments)
 	, kafka_linger_ms_(5)
 	, kafka_batch_size_(32768)
 	, kafka_security_protocol_("SASL_SSL")
+	, kafka_acks_("all")
+	, kafka_retries_(5)
+	, kafka_compression_type_("gzip")
+	, kafka_enable_idempotence_(true)
 	, use_ssl_(false)
 	, ca_cert_("")
 	, engine_("")
@@ -91,6 +95,14 @@ auto Configurations::kafka_linger_ms() -> int { return kafka_linger_ms_; }
 auto Configurations::kafka_batch_size() -> int { return kafka_batch_size_; }
 
 auto Configurations::kafka_security_protocol() -> std::string { return kafka_security_protocol_; }
+
+auto Configurations::kafka_acks() -> std::string { return kafka_acks_; }
+
+auto Configurations::kafka_retries() -> int { return kafka_retries_; }
+
+auto Configurations::kafka_compression_type() -> std::string { return kafka_compression_type_; }
+
+auto Configurations::kafka_enable_idempotence() -> bool { return kafka_enable_idempotence_; }
 
 auto Configurations::use_ssl() -> bool { return use_ssl_; }
 
@@ -257,6 +269,26 @@ auto Configurations::load() -> void
 	if (message.contains("kafka_security_protocol") && message.at("kafka_security_protocol").is_string())
 	{
 		kafka_security_protocol_ = message.at("kafka_security_protocol").as_string().data();
+	}
+
+	if (message.contains("kafka_acks") && message.at("kafka_acks").is_string())
+	{
+		kafka_acks_ = message.at("kafka_acks").as_string().data();
+	}
+
+	if (message.contains("kafka_retries") && message.at("kafka_retries").is_number())
+	{
+		kafka_retries_ = static_cast<int>(message.at("kafka_retries").as_int64());
+	}
+
+	if (message.contains("kafka_compression_type") && message.at("kafka_compression_type").is_string())
+	{
+		kafka_compression_type_ = message.at("kafka_compression_type").as_string().data();
+	}
+
+	if (message.contains("kafka_enable_idempotence") && message.at("kafka_enable_idempotence").is_bool())
+	{
+		kafka_enable_idempotence_ = message.at("kafka_enable_idempotence").as_bool();
 	}
 }
 

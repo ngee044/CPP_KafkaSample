@@ -46,6 +46,10 @@ public:
 	auto kafka_linger_ms() -> int;
 	auto kafka_batch_size() -> int;
 	auto kafka_security_protocol() -> std::string;
+	auto kafka_acks() -> std::string;
+	auto kafka_retries() -> int;
+	auto kafka_compression_type() -> std::string;
+	auto kafka_enable_idempotence() -> bool;
 
 protected:
 	auto load() -> void;
@@ -86,5 +90,9 @@ private:
 	int kafka_linger_ms_;
 	int kafka_batch_size_;
 	std::string kafka_security_protocol_;
+	std::string kafka_acks_;
+	int kafka_retries_;
+	std::string kafka_compression_type_;
+	bool kafka_enable_idempotence_;
 
 };

@@ -47,6 +47,10 @@ public:
 	auto kafka_auto_commit_interval() -> int;
 	auto kafka_message_polling_interval() -> int;
 	auto kafka_auto_offset_reset() -> std::string;
+	auto kafka_acks() -> std::string;
+	auto kafka_retries() -> int;
+	auto kafka_compression_type() -> std::string;
+	auto kafka_enable_idempotence() -> bool;
 
 
 protected:
@@ -82,6 +86,10 @@ private:
 	int kafka_auto_commit_interval_;
 	int kafka_message_polling_interval_;
 	std::string kafka_auto_offset_reset_;
+	std::string kafka_acks_;
+	int kafka_retries_;
+	std::string kafka_compression_type_;
+	bool kafka_enable_idempotence_;
 
 	bool use_ssl_;
 	std::string ca_cert_;

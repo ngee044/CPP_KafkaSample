@@ -16,6 +16,10 @@
 	"kafka_linger_ms": 5,
 	"kafka_batch_size": 32768,
 	"kafka_security_protocol": "SASL_SSL",
+	"kafka_acks": "all",
+	"kafka_retries": 5,
+	"kafka_compression_type": "gzip",
+	"kafka_enable_idempotence": true,
 
 	"kafka_broker_list": [
 		{

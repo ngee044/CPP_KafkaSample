@@ -36,6 +36,10 @@ Configurations::Configurations(ArgumentParser&& arguments)
 	, kafka_auto_commit_interval_(1000)
 	, kafka_message_polling_interval_(500)
 	, kafka_auto_offset_reset_("earliest")
+	, kafka_acks_("all")
+	, kafka_retries_(5)
+	, kafka_compression_type_("gzip")
+	, kafka_enable_idempotence_(true)
 	, use_ssl_(false)
 	, ca_cert_("")
 	, engine_("")
@@ -94,6 +98,14 @@ auto Configurations::kafka_auto_commit_interval() -> int { return kafka_auto_com
 auto Configurations::kafka_message_polling_interval() -> int { return kafka_message_polling_interval_; }
 
 auto Configurations::kafka_auto_offset_reset() -> std::string { return kafka_auto_offset_reset_; }
+
+auto Configurations::kafka_acks() -> std::string { return kafka_acks_; }
+
+auto Configurations::kafka_retries() -> int { return kafka_retries_; }
+
+auto Configurations::kafka_compression_type() -> std::string { return kafka_compression_type_; }
+
+auto Configurations::kafka_enable_idempotence() -> bool { return kafka_enable_idempotence_; }
 
 auto Configurations::use_ssl() -> bool { return use_ssl_; }
 
@@ -260,6 +272,26 @@ auto Configurations::load() -> void
 	if (message.contains("kafka_auto_offset_reset") && message.at("kafka_auto_offset_reset").is_string())
 	{
 		kafka_auto_offset_reset_ = message.at("kafka_auto_offset_reset").as_string().data();
+	}
+
+	if (message.contains("kafka_acks") && message.at("kafka_acks").is_string())
+	{
+		kafka_acks_ = message.at("kafka_acks").as_string().data();
+	}
+
+	if (message.contains("kafka_retries") && message.at("kafka_retries").is_number())
+	{
+		kafka_retries_ = static_cast<int>(message.at("kafka_retries").as_int64());
+	}
+
+	if (message.contains("kafka_compression_type") && message.at("kafka_compression_type").is_string())
+	{
+		kafka_compression_type_ = message.at("kafka_compression_type").as_string().data();
+	}
+
+	if (message.contains("kafka_enable_idempotence") && message.at("kafka_enable_idempotence").is_bool())
+	{
+		kafka_enable_idempotence_ = message.at("kafka_enable_idempotence").as_bool();
 	}
 
 	if (message.contains("use_ssl") && message.at("use_ssl").is_bool())

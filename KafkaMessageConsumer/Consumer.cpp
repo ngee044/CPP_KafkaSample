@@ -47,7 +47,6 @@ namespace KafkaMessageConsumer
 		kafka_config.add_config("auto.commit.interval.ms", std::to_string(configurations_->kafka_auto_commit_interval()));
 		kafka_config.add_config("auto.offset.reset", configurations_->kafka_auto_offset_reset());
 
-
 		kafka_queue_consume_ = std::make_shared<Kafka::KafkaQueueConsume>(kafka_config);
 
 // TODO

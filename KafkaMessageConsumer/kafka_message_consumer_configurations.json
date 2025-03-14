@@ -17,6 +17,11 @@
 	"kafka_auto_commit_interval": 1000,
 	"kafka_message_polling_interval": 500,
 	"kafka_auto_offset_reset": "earliest",
+	"kafka_acks": "all",
+	"kafka_retries": 5,
+	"kafka_compression_type": "gzip",
+	"kafka_enable_idempotence": true,
+
 
 	"kafka_broker_list": [
 		{
@@ -32,7 +37,7 @@
 			"broker_host": "localhost:9092"
 		}
 	],
-	
+
 	"use_ssl": false,
 	"win_ca_cert" : "",
 	"linux_ca_cert" : "",
