@@ -1,4 +1,4 @@
-# CPP_KafkaSample (현재 진행 중)
+# CPP_KafkaSample
 모던 C++을 사용하여 카프카에 대한 기술 시연을 구현합니다.
 MSA 컨셉으로 스케일 아웃 상황을 가정하여 시연합니다.
 
