@@ -116,7 +116,7 @@ auto Configurations::client_key() -> std::string { return client_key_; }
 
 auto Configurations::load() -> void
 {
-	std::filesystem::path path = root_path_ + "main_server_configurations.json";
+	std::filesystem::path path = root_path_ + "kafka_message_emitter_configurations.json";
 	if (!std::filesystem::exists(path))
 	{
 		Logger::handle().write(LogTypes::Error, fmt::format("Configurations file does not exist: {}", path.string()));
@@ -124,7 +124,7 @@ auto Configurations::load() -> void
 	}
 
 	File source;
-	source.open(fmt::format("{}main_server_configurations.json", root_path_), std::ios::in | std::ios::binary, std::locale(""));
+	source.open(fmt::format("{}kafka_message_emitter_configurations.json", root_path_), std::ios::in | std::ios::binary, std::locale(""));
 	auto [source_data, error_message] = source.read_bytes();
 	if (source_data == std::nullopt)
 	{
