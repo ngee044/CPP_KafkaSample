@@ -31,6 +31,7 @@ Configurations::Configurations(ArgumentParser&& arguments)
 	, kafka_host_("")
 	, kafka_port_(9092)
 	, kafka_topic_name_("")
+	, kafka_dlq_topic_name_("")
 	, kafka_topic_group_name_("")
 	, kafka_enable_auto_commit_(true)
 	, kafka_auto_commit_interval_(1000)
@@ -88,6 +89,8 @@ auto Configurations::kafka_brokers() -> std::vector<std::tuple<std::string, std:
 auto Configurations::kafka_port() -> uint16_t { return kafka_port_; }
 
 auto Configurations::kafka_topic_name() -> std::string { return kafka_topic_name_; }
+
+auto Configurations::kafka_dlq_topic_name() -> std::string { return kafka_dlq_topic_name_; }
 
 auto Configurations::kafka_topic_group_name() -> std::string { return kafka_topic_group_name_; }
 
@@ -252,6 +255,11 @@ auto Configurations::load() -> void
 	if (message.contains("kafka_topic_name") && message.at("kafka_topic_name").is_string())
 	{
 		kafka_topic_name_ = message.at("kafka_topic_name").as_string().data();
+	}
+
+	if (message.contains("kafka_dlq_topic_name") && message.at("kafka_dlq_topic_name").is_string())
+	{
+		kafka_dlq_topic_name_ = message.at("kafka_dlq_topic_name").as_string().data();
 	}
 
 	if (message.contains("kafka_topic_group_name") && message.at("kafka_topic_group_name").is_string())

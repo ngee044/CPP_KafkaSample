@@ -3,6 +3,7 @@
 #include "Configurations.h"
 #include "KafkaQueueConsume.h"
 #include "ThreadPool.h"
+#include "DLQProducer.h"
 
 #include <string>
 #include <memory>
@@ -40,6 +41,7 @@ namespace KafkaMessageConsumer
 		std::shared_ptr<Kafka::KafkaQueueConsume> kafka_queue_consume_;
 		std::shared_ptr<ThreadPool> thread_pool_;
 		std::map<std::string, std::string> registered_brokers_;
+		std::shared_ptr<DLQProducer> dlq_producer_;
 
 		std::atomic<bool> running_;
 		std::thread polling_thread_;

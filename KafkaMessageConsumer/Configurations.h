@@ -42,6 +42,7 @@ public:
 	auto kafka_brokers() -> std::vector<std::tuple<std::string, std::string>>;
 	auto kafka_port() -> uint16_t;
 	auto kafka_topic_name() -> std::string;
+	auto kafka_dlq_topic_name() -> std::string;
 	auto kafka_topic_group_name() -> std::string;
 	auto kafka_enable_auto_commit() -> bool;
 	auto kafka_auto_commit_interval() -> int;
@@ -81,6 +82,7 @@ private:
 	std::vector<std::tuple<std::string, std::string>> kafka_brokers_;
 	int kafka_port_;
 	std::string kafka_topic_name_;
+	std::string kafka_dlq_topic_name_;
 	std::string kafka_topic_group_name_;
 	bool kafka_enable_auto_commit_;
 	int kafka_auto_commit_interval_;

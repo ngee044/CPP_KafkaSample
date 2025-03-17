@@ -8,11 +8,13 @@ set(SOURCE_FILES
 	main.cpp
 	Configurations.cpp
 	Consumer.cpp
+	DLQProducer.cpp
 )
 
 set (HEADER_FILES
 	Configurations.h
 	Consumer.h
+	DLQProducer.h
 )
 
 project(${PROGRAM_NAME} VERSION 1.0.0.0)

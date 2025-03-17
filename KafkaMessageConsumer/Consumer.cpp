@@ -63,6 +63,8 @@ namespace KafkaMessageConsumer
 
 		kafka_queue_consume_ = std::make_shared<Kafka::KafkaQueueConsume>(kafka_config);
 
+		dlq_producer_ = std::make_shared<DLQProducer>(brokers, configurations_->kafka_dlq_topic_name());
+
 // TODO
 // kafka config class settings
 #if 0
@@ -216,6 +218,13 @@ namespace KafkaMessageConsumer
 			return { false, subscribe_error };
 		}
 
+		auto [dlq_start_ok, dlq_error] = dlq_producer_->start();
+		if (!dlq_start_ok)
+		{
+			Logger::handle().write(LogTypes::Error, fmt::format("DLQ Producer start failed: {}", dlq_error.value()));
+			return { false, dlq_error.value() };
+		}
+
 		running_.store(true);
 		messages_since_commit_ = 0;
 		last_commit_time_ = std::chrono::system_clock::now();
@@ -303,7 +312,7 @@ namespace KafkaMessageConsumer
 			
 			kafka_queue_consume_->commit_async();
 #ifdef _DEBUG
-			this_thread::sleep_for(std::chrono::seconds(1));
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 #endif
 		}
 
