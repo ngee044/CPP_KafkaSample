@@ -6,6 +6,9 @@
 #include "ThreadWorker.h"
 #include "JobPool.h"
 
+#include "boost/json.hpp"
+#include "boost/json/parse.hpp"
+
 #include "fmt/format.h"
 #include "fmt/xchar.h"
 
@@ -50,7 +53,9 @@ namespace KafkaMessageConsumer
 		kafka_config.add_config("auto.offset.reset", configurations_->kafka_auto_offset_reset());
 		kafka_config.add_config("acks", configurations_->kafka_acks());
 		kafka_config.add_config("retries", std::to_string(configurations_->kafka_retries())); 
-		kafka_config.add_config("compression.type", configurations_->kafka_compression_type());
+		// TODO
+		// set compression type
+		//kafka_config.add_config("compression.type", configurations_->kafka_compression_type());
 		kafka_config.add_config("enable.idempotence", configurations_->kafka_enable_idempotence() ? "true" : "false");
 
 		if (configurations_->use_ssl())
@@ -64,14 +69,6 @@ namespace KafkaMessageConsumer
 		kafka_queue_consume_ = std::make_shared<Kafka::KafkaQueueConsume>(kafka_config);
 
 		dlq_producer_ = std::make_shared<DLQProducer>(brokers, configurations_->kafka_dlq_topic_name());
-
-// TODO
-// kafka config class settings
-#if 0
-		kafka_config.set_group_id(configurations_->kafka_topic_group_name());
-		kafka_config.set_auto_commit(configurations_->kafka_enable_auto_commit());
-		kafka_config.set_timeout_ms(configurations_->kafka_auto_commit_interval());
-#endif
 
 	}
 

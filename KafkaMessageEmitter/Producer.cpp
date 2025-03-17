@@ -40,7 +40,9 @@ namespace KafkaMessageEmitter
         Kafka::KafkaConfig kafka_config(brokers);
         kafka_config.add_config("acks", configurations_->kafka_acks());
         kafka_config.add_config("retries", std::to_string(configurations_->kafka_retries()));
-        kafka_config.add_config("compression.type", configurations_->kafka_compression_type());
+        // TODO
+        // set compression type
+        // kafka_config.add_config("compression.type", configurations_->kafka_compression_type());
         kafka_config.add_config("enable.idempotence", configurations_->kafka_enable_idempotence() ? "true" : "false");
         kafka_config.add_config("linger.ms", "5");
         kafka_config.add_config("batch.size", "32768");
