@@ -38,6 +38,10 @@ namespace KafkaMessageEmitter
 		Logger::handle().write(LogTypes::Information, fmt::format("Kafka brokers: {}", brokers));
 		
         Kafka::KafkaConfig kafka_config(brokers);
+        kafka_config.add_config("acks", configurations_->kafka_acks());
+        kafka_config.add_config("retries", std::to_string(configurations_->kafka_retries()));
+        kafka_config.add_config("compression.type", configurations_->kafka_compression_type());
+        kafka_config.add_config("enable.idempotence", configurations_->kafka_enable_idempotence() ? "true" : "false");
         kafka_config.add_config("linger.ms", "5");
         kafka_config.add_config("batch.size", "32768");
         kafka_config.add_config("security.protocol", configurations_->kafka_security_protocol());
@@ -101,20 +105,8 @@ namespace KafkaMessageEmitter
             Logger::handle().write(LogTypes::Error, "KafkaQueueEmitter is not initialized.");
             return { false, "KafkaQueueEmitter is not initialized." };
         }
-
-        auto delivery_result = kafka_queue_emitter_->send(kafka_message);
-
-        if (delivery_result.get_status() == Kafka::DeliveryResult::Status::Failed)
-        {
-            Logger::handle().write(LogTypes::Error, fmt::format("failed send message (kafka) = {}", delivery_result.get_message()));
-            if (delivery_result.get_error().has_value())
-            {
-                Logger::handle().write(LogTypes::Error, fmt::format("kafka producer send error = {}", delivery_result.get_error().value()));
-            }
-            return { false, delivery_result.get_error().value() };
-        }
-
-        return { true, std::nullopt };
+        
+        return retry_send(kafka_message);
     }
 
     auto Producer::send_message(const std::vector<Kafka::KafkaMessage> &kafka_messages) -> std::tuple<bool, std::optional<std::string>>
@@ -125,17 +117,13 @@ namespace KafkaMessageEmitter
             return { false, "KafkaQueueEmitter is not initialized." };
         }
 
-        auto delivery_results = kafka_queue_emitter_->send_batch(kafka_messages);
-
-        for (const auto& delivery_result : delivery_results)
+        for (const auto& message : kafka_messages)
         {
-            if (delivery_result.get_status() == Kafka::DeliveryResult::Status::Failed)
+            auto [result, error] = retry_send(message);
+            if (!result)
             {
-                Logger::handle().write(LogTypes::Error, fmt::format("failed send message (kafka) = {}", delivery_result.get_message()));
-                if (delivery_result.get_error().has_value())
-                {
-                    Logger::handle().write(LogTypes::Error, fmt::format("kafka producer send error = {}", delivery_result.get_error().value()));
-                }
+                Logger::handle().write(LogTypes::Error, fmt::format("Failed to send message: {}", error.value()));
+                return { false, error };
             }
         }
 
@@ -219,5 +207,37 @@ namespace KafkaMessageEmitter
 	
 		thread_pool_->stop();
 		thread_pool_.reset();
+    }
+ 
+    auto Producer::retry_send(const Kafka::KafkaMessage &message) -> std::tuple<bool, std::optional<std::string>>
+    {
+        if (kafka_queue_emitter_ == nullptr)
+        {
+            Logger::handle().write(LogTypes::Error, "KafkaQueueEmitter is not initialized.");
+            return { false, "KafkaQueueEmitter is not initialized." };
+        }
+
+        int retries = configurations_->kafka_retries();
+        if (retries <= 0)
+        {
+            retries = 3;
+        }
+        for (auto i = 0; i < retries ; i++)
+        {
+            auto delivery_result = kafka_queue_emitter_->send(message);
+            if (delivery_result.get_status() == Kafka::DeliveryResult::Status::Success)
+            {
+                return { true, std::nullopt };
+            }
+            
+            Logger::handle().write(LogTypes::Error, fmt::format("failed send message (kafka) = {}", delivery_result.get_message()));
+            if (delivery_result.get_error().has_value())
+            {
+                Logger::handle().write(LogTypes::Error, fmt::format("kafka producer send error = {}", delivery_result.get_error().value()));
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(i));
+        }
+        return { false, "Failed to send message to kafka" };
     }
 }

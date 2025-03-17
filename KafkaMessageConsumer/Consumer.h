@@ -3,6 +3,7 @@
 #include "Configurations.h"
 #include "KafkaQueueConsume.h"
 #include "ThreadPool.h"
+#include "DLQProducer.h"
 
 #include <string>
 #include <memory>
@@ -27,6 +28,11 @@ namespace KafkaMessageConsumer
 
 	protected:
 		auto message_polling() -> std::tuple<bool, std::optional<std::string>>;
+
+        // error handle, with retry(dql)
+		auto handle_message_dlq(const Kafka::KafkaMessage& message) -> std::tuple<bool, std::optional<std::string>>;
+		auto send_to_dlq(const Kafka::KafkaMessage& message) -> void;
+
 		auto create_thread_pool() -> std::tuple<bool, std::optional<std::string>>;
 		auto destroy_thread_pool() -> void;
 
@@ -35,6 +41,13 @@ namespace KafkaMessageConsumer
 		std::shared_ptr<Kafka::KafkaQueueConsume> kafka_queue_consume_;
 		std::shared_ptr<ThreadPool> thread_pool_;
 		std::map<std::string, std::string> registered_brokers_;
+		std::shared_ptr<DLQProducer> dlq_producer_;
+
+		std::atomic<bool> running_;
+		std::thread polling_thread_;
+
+		size_t messages_since_commit_;
+		std::chrono::time_point<std::chrono::system_clock> last_commit_time_;
 	};
 
 }

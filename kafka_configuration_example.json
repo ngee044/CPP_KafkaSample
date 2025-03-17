@@ -25,7 +25,18 @@
 
 
 	"kafka_broker_list": [
-
+		{
+			"broker_name": "broker1",
+			"broker_host": "localhost:9092"
+		},
+		{
+			"broker_name": "broker2",
+			"broker_host": "localhost:9092"
+		},
+		{
+			"broker_name": "broker3",
+			"broker_host": "localhost:9092"
+		}
 	],
 
 	"use_ssl": false,
